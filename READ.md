@@ -27,7 +27,7 @@ INSERT ... VALUES ... RETURNING fieldname
 update statements similar to insert
 
 UPSERT (update or insert)
-
+```
 INSERT INTO customer (first_name)
 VALUES ('Bill''O Sullivan')
 ON CONFLICT
@@ -35,5 +35,5 @@ DO
     UPDATE SET
         tag = EXCLUDE.tag
         update_date = NOW()
-
+```
 from --> Select --> order by
