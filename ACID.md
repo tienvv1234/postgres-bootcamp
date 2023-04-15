@@ -42,9 +42,26 @@ from video
     + postgresql has a feature called snapshot isolation, which prevents this from happening
     it will create new version of the row for each transaction, and the transaction will only see the version of the row that was created when the transaction started
     this is called MVCC
-    + mysql, oracle, and sql server do not have this feature, 
+    + mysql, oracle, and sql server do not have this feature, it changes the record but keeps the old record in another called the undo log
 
 
 - Phantom read - when you select a range of rows, and another transaction inserts a row into that range, you will get a different result set when you run the same query again
 
 - Lost updates - when you update a row, and another transaction updates the same row, the second update will be lost   
+
+### Isolation - Isolation Levels for inflight transactions
+1. Read uncommitted(uncommitted is no isolation) 
+- NO isolation, any changes from the outside is visible to the transaction, commit or not (but this will be fast because it does not lock the row, I don't really need to maintain anything in same cases)
+```
+BEGIN ISOLATION LEVEL READ UNCOMMITTED;
+SELECT * FROM products WHERE name = 'iPhone';
+UPDATE products SET quantity = quantity - 1 WHERE name = 'iPhone';
+COMMIT;
+```
+2. Read committed
+- Is the one of most popular isolation levels
+- Each query in a transaction only sees committed changes from other transactions
+- This is the default isolation level in MySQL
+
+3. Repeatable read
+- The transaction will make sure that when a query read a row, that row will remain unchanges the transaction while it is running
