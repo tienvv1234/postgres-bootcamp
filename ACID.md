@@ -65,3 +65,23 @@ COMMIT;
 
 3. Repeatable read
 - The transaction will make sure that when a query read a row, that row will remain unchanges the transaction while it is running
+4. Snapshot
+Each query in a transaction only sees changes that have been committed up to the start of the transaction. it's like a snapshot version of the database at that moment
+5. Serializable
+Transatoins are run as if they serialized one after the other
+
+### Isolation levels vs read phenomena
+
+[alt](Isolation%20levels%20vs%20read%20phenomena.png)
+
+### Serializable vs Snapshot
+- Serializable is more strict than snapshot
+- Serializable will lock the rows that are being read, so that other transactions cannot modify them
+- Snapshot will not lock the rows, but it will create a snapshot of the database at the start of the transaction, and the transaction will only see the snapshot
+
+### Database implementation of isolation levels
+- Each DBMD implements isolation levels differently
+- Perssimistic - Row level locks, table locks, page locks to avoid lost updates (very expensive, especially when you have a lot of concurrent transactions, row level locks is the most expensive)
+- Optimistic - No locks, just track if things changed and fail the transaction if so
+- Repeatable read "locks" the rows it read but it could be expensive if you read a lot of rows, postgres implements RR as snapshot. That is why you don't get phantom reads with postgres in repreatable read
+0 Serializable are usually implemented with optimistic concurrency control, you can implement it pessimistically with `select for update`

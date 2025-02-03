@@ -1,0 +1,11 @@
+### Consistency
+- Consistency in Data
+    - Defined by the user
+    - Referential integrity(foreign key constraints)
+    - Atomicity
+    - Isolation
+- Consistency in reads
+    - If a transaction committed a change, will a new transaction immediately see the change?
+    - Affects the system as a whole
+    - Relational and NoSQL databases suffer from this
+    - Eventual consistency

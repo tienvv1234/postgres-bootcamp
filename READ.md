@@ -616,3 +616,66 @@ where is_active = 'N'
 
 ### Expression Index
 ```
+1. An index created based on an expression:
+   UPPER(column_name)
+   COS(column_name)
+2. Postgresql will consider using that index when the expression that defines the index appears in the 
+    - WHERE clause
+    - ORDER BY clause
+3. Very expressive indexes
+   Postgreql has to evaluete the expression for EACH ROW when it is inserted or update and use the result for indexing
+
+create index index_name on table_name(expression)
+
+create table t_dates as
+select d, repeat(md5(d::text), 10) as padding
+from generate_series(timestamp '1800-01-01', timestamp '210-01-01', interval 1 day) s(d)
+
+vacuum analyze t_dates
+
+explain analyze select * from t_dates where d between '2001-01-01' and '2001-01-31';
+-- without any index
+-- 97.634
+
+### adding data while indexing
+```
+create index concurrently
+it's in the process because thhe create index command will lock up the table using a shared lock
+to ensure that no changes happen to that table while the index is being created
+while this is clearly not a problem for a small table, it will cause really an issue for a large table
+so the solution is to use the concurrently keyword
+Note: Postgresql doesn't guarentee success when using concurrently, 
+
+this will select the indesvalid for table
+Select oid, relname, reltuples, i.indisunique, i.indisclustered, i.indisvalid, pg_catalog.pg_get_indexdef(i.indexrelid, 0, true)
+from pg_class c join pg_index i on c.oid = i.indrelid
+where c.relname = 't_dates'
+```
+
+### Invalidating an index
+```
+lets view all indexes for a table
+Select oid, relname, reltuples, i.indisunique, i.indisclustered, i.indisvalid, pg_catalog.pg_get_indexdef(i.indexrelid, 0, true)
+from pg_class c join pg_index i on c.oid = i.indrelid
+where c.relname = 'orders'
+
+create index ship_country
+
+-- lets disallow the query optimizer from using the index
+update pg_index
+set indisvalid = false
+where indexrelid = (select oid from pg_class where relkind= 'i' relname = 'idx_orders_ship_country')
+```
+
+### Rebuilding an index
+```
+REINDEX (verbose) index concurrently idx_orders_customer_id_order_id;
+REINDEX (verbose) table table_name;
+shema , database 
+
+Begin
+REINDEX (verbose) index idx_orders_customer_id_order_id;
+REINDEX (verbose) table table_name;
+End;
+only working for index and table
+```
